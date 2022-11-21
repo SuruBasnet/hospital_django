@@ -13,6 +13,12 @@ class PatientTypeSerializer(serializers.ModelSerializer):
         model = TypePatient
         fields = '__all__'
 
+    def to_representation(self, instance):
+        return super().to_representation(instance)
+        instance.cmp_id 
+        cmpBasicInfo.objects.get(cmp_id)
+        
+
 
 class PrimaryDiagnosisSerializer(serializers.ModelSerializer):
     class Meta:
@@ -82,6 +88,7 @@ class SampleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sample
         fields = '__all__'
+        depth = 5
 
 class SampleTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,10 +99,26 @@ class SampleTestSerializer(serializers.ModelSerializer):
     class Meta:
         model = SampleTest
         fields = '__all__'
+       
 
 class SampleTypeTestSerializer(serializers.ModelSerializer):
     class Meta:
         model = SampleTypeTest
         fields = '__all__'
 
-        
+
+class SampleTypeTestSerializer_2(serializers.ModelSerializer):
+    class Meta:
+        model = SampleTypeTest
+        fields = '__all__'
+
+class ReferBySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Referby
+        fields = '__all__'
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email','username','password')

@@ -3,6 +3,7 @@ from django.db import models
 # Create your models here.
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 currency_list = [('Rupees', 'Rupees'),
@@ -106,7 +107,7 @@ gender = [('Male', 'Male'), ('Female', 'Female'), ('Others', 'Others')]
 
 deposit_mode = [('Deposit', 'Deposit'), ('Return', 'Return')]
 
-patientStatus = [('Registered', 'Registered'), ('Admitted', 'Admitted')]
+patientStatus = [('Registered', 'Registered'), ('Admitted', 'Admitted'),('Outpatient', 'Outpatient'),('Discharged','Discharged')]
 
 billing_def_ledger_Type = [('Cash', 'Cash'), ('Credit', 'Credit')]
 
@@ -115,6 +116,15 @@ in_outType = [('Percentage', 'Percentage'), ('Amount', 'Amount')]
 budgetCategoryUnder = [('Primary', 'Primary')]
 # Master
 
+class User(AbstractUser):
+    username = models.CharField(max_length=200)
+    email = models.EmailField( unique=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
+    def __str__(self):
+        return self.email
 
 class BillingMode(models.Model):
     billingmode = models.CharField(max_length=50, null=True, blank=True)
@@ -389,146 +399,6 @@ class Referby(models.Model):
 # Medicine item foreign model start
 
 
-class Standard(models.Model):
-    name = models.CharField(
-        max_length=50, default='N/A', null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Manufacturer(models.Model):
-    name = models.CharField(
-        max_length=50, default='N/A', null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-
-class PackSize(models.Model):
-    name = models.CharField(
-        max_length=50, default='N/A', null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Generic(models.Model):
-    name = models.CharField(
-        max_length=50, default='N/A', null=True, blank=True)
-    therapeutic = models.CharField(
-        max_length=50, default='N/A', null=True, blank=True, choices=therapeutic)  # choices not finished
-    narcotic = models.CharField(
-        max_length=10, choices=diff, null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-
-class GenericStrength(models.Model):
-    genericName = models.ForeignKey(
-        'Generic', on_delete=models.CASCADE, null=True, blank=True)
-    route = models.CharField(
-        max_length=50, choices=route, null=True, blank=True)
-    strength = models.IntegerField(null=True, blank=True)
-    strength_unit = models.CharField(max_length=50, null=True, blank=True)
-    volume = models.IntegerField(null=True, blank=True)
-    volumeUnit = models.CharField(max_length=50, null=True, blank=True)
-    otherInfo = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return self.genericName
-
-
-class Unit(models.Model):
-    name = models.CharField(max_length=20, null=True, blank=True)
-    formalName = models.CharField(max_length=50, null=True, blank=True)
-    applyFor = models.CharField(max_length=50, choices=applyFor)
-
-    def __str__(self):
-        return self.name
-
-# Medicine item foreign models end
-
-# Master
-
-
-class Medicine(models.Model):
-    brandName = models.CharField(max_length=50, null=True, blank=True)
-    standard = models.ForeignKey(
-        'Standard', on_delete=models.CASCADE, null=True, blank=True)
-    manufacturer = models.ForeignKey(
-        'Manufacturer', on_delete=models.CASCADE, null=True, blank=True)
-    primaryUnit = models.IntegerField(null=True, blank=True)
-    packSize = models.ForeignKey(
-        'PackSize', null=True, blank=True, on_delete=models.CASCADE)
-    preservatives = models.CharField(max_length=50, null=True, blank=True)
-    medicine_type = models.CharField(max_length=50, choices=medicine_type)
-    allow_tablet_break = models.CharField(max_length=10, choices=diff)
-    active = models.CharField(max_length=10, choices=diff)
-    genericSaltStrength = models.OneToOneField(
-        'GenericStrength', on_delete=models.CASCADE,
-        primary_key=True)
-    unit = models.ForeignKey('Unit', on_delete=models.CASCADE)
-    ingredient = models.CharField(max_length=50, null=True, blank=True)
-    secondaryUnit = models.IntegerField(null=True, blank=True)
-    packSize = models.ForeignKey(
-        'PackSize', on_delete=models.CASCADE, null=True, blank=True)
-    minStock = models.IntegerField(null=True, blank=True)
-    maxStock = models.IntegerField(null=True, blank=True)
-    tax = models.CharField(max_length=10, choices=tax)
-
-    def __str__(self):
-        return self.brandName
-
-# Surgical item foreign key model start
-
-
-class SurgicalGroup(models.Model):
-    name = models.CharField(max_length=50, null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Surgical(models.Model):
-    surgicalName = models.OneToOneField('SurgicalGroup', on_delete=models.CASCADE,
-                                        primary_key=True,)
-    type_size = models.CharField(max_length=50, null=True, blank=True)
-    remarks = models.TextField()
-
-    def __str__(self):
-        return self.surgicalName
-
-
-# Surgical item foreign key model end
-# Master
-class SurgicalItem(models.Model):
-    brandName = models.CharField(max_length=50, null=True, blank=True)
-    standard = models.ForeignKey(
-        'Standard', on_delete=models.CASCADE, null=True, blank=True)
-    unit = models.ForeignKey(
-        'Unit', on_delete=models.CASCADE, null=True, blank=True)
-    primaryUnit = models.IntegerField(null=True, blank=True)
-    packSize = models.ForeignKey(
-        'PackSize', null=True, blank=True, on_delete=models.CASCADE)
-    secondaryUnit = models.IntegerField(null=True, blank=True)
-    packSize = models.ForeignKey(
-        'PackSize', on_delete=models.CASCADE, null=True, blank=True)
-    tax = models.CharField(max_length=20, choices=tax, null=True, blank=True)
-    active = models.CharField(
-        max_length=10, choices=diff, null=True, blank=True)
-    surgicalName = models.OneToOneField('Surgical', on_delete=models.CASCADE,
-                                        primary_key=True)
-    manufacturer = models.ForeignKey(
-        'Manufacturer', null=True, blank=True, on_delete=models.CASCADE)
-    surgical_item_type = models.CharField(
-        max_length=20, choices=medicine_type, null=True, blank=True)
-    min_stock = models.IntegerField(null=True, blank=True)
-    max_stock = models.IntegerField(null=True, blank=True)
-
-    def __str__(self):
-        return self.brandName
 
 # extraitem foreign key models start
 
@@ -1293,8 +1163,8 @@ class BankCollection(models.Model):
 # Patients
 
 
-bloodType = [('A+', 'A+'), ('A', 'A'), ('AB', 'AB'), ('AB+', 'AB+'),
-             ('B+', 'B+'), ('B', 'B'), ('O+', 'O+'), ('O', 'O')]
+bloodType = [('A+', 'A+'), ('A-', 'A-'), ('AB+', 'AB+'),('AB-', 'AB-'),
+             ('B+', 'B+'), ('B-', 'B-'), ('O+', 'O+'), ('O-', 'O-')]
 
 currentOperativePlan = [('Completed', 'Completed'),
                         ('Dropped', 'Dropped'), ('Planned', 'Planned')]
@@ -1319,6 +1189,7 @@ class TypePatient(models.Model):
     name = models.CharField(max_length=100)
     discount = models.BigIntegerField(null=True, blank=True)
     creditLimit = models.BigIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -1327,6 +1198,7 @@ class TypePatient(models.Model):
 class Ward(models.Model):
     ward_no = models.IntegerField(null=True, blank=True)
     ward_name = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.ward_no)
@@ -1336,9 +1208,11 @@ class Bed(models.Model):
     bed_no = models.IntegerField(null=True, blank=True)
     ward = models.ForeignKey(
         'Ward', on_delete=models.CASCADE, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.bed_no)
+
 
 
 class Patient(models.Model):
@@ -1360,7 +1234,6 @@ class Patient(models.Model):
     referredDate = models.DateField(null=True, blank=True)
     religion = models.CharField(max_length=100, null=True, blank=True)
     parent_guardian = models.CharField(max_length=200, null=True, blank=True)
-    # photo =
     phone = models.BigIntegerField(null=True, blank=True)
     email = models.EmailField(unique=True, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
@@ -1383,6 +1256,7 @@ class PrimaryDiagnosis(models.Model):
     diagnosis = models.CharField(max_length=300)
     date = models.DateField()
     secondaryDiagnosis = models.BooleanField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.diagnosis
@@ -1392,6 +1266,7 @@ class PrimaryDiagnosis(models.Model):
 class PatientAllergies(models.Model):
     patient = models.IntegerField(null=True)
     name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -1409,7 +1284,7 @@ class CurrentOperativePlan(models.Model):
     created_at = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        p = Patient.objects.get(id=self.patient.id)
+        p = Patient.objects.get(id=self.patient)
         return '%s' % (p)
 # In patient listing start
 
@@ -1418,19 +1293,20 @@ class PatientNotes(models.Model):
     patient = models.IntegerField(null=True)
     note = models.TextField()
     # Visit model relation
-    visit = models.ForeignKey('PatientVisitType', on_delete=models.DO_NOTHING)
+    visit = models.ForeignKey('PatientVisit', on_delete=models.DO_NOTHING)
     onBehalfOf = models.ForeignKey(
         'Consultant', on_delete=models.DO_NOTHING, null=True, blank=True)  # Doctor relation
     created_at = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        p = Patient.objects.get(id=self.patient.id)
+        p = Patient.objects.get(id=self.patient)
         return '%s' % (p)
 
 
 class PatientVisitType(models.Model):
     typeName = models.CharField(max_length=200)
     status = models.CharField(max_length=100, choices=status)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.typeName
@@ -1450,9 +1326,11 @@ class PatientSurgery(models.Model):
     room_no = models.ManyToManyField('Room')
     location = models.CharField(max_length=100, null=True, blank=True)
     notes = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(self.date)
+        p = Patient.objects.get(id=self.patient.id)
+        return str(self.date) + '-' + '%s' % (p)
 
 
 class PatientAppointment(models.Model):
@@ -1469,30 +1347,32 @@ class PatientAppointment(models.Model):
         'PatientVisitType', on_delete=models.DO_NOTHING)
     department = models.ForeignKey(
         'Department', on_delete=models.DO_NOTHING, null=True, blank=True)
-    rooms = models.ManyToManyField('Room')
+    rooms = models.ManyToManyField('Room',blank=True)
     # The below field should be a relation with doctor and when the model is created this should be listed on that doctors page.
     appointmentWith = models.ForeignKey(
         'Consultant', on_delete=models.DO_NOTHING, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     status = models.CharField(max_length=50, choices=appointmentStatus)
     notes = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(self.date) + '-' + self.appointment_type
+        p = Patient.objects.get(id=self.patient.id)
+        return str(self.startdate) + '-' + '%s' % (p)
 
 
 class PatientVisit(models.Model):
     date = models.DateField()
     dischargeDate = models.DateField()  # If the visit type is admission
-    location = models.CharField(max_length=200)
+    location = models.CharField(max_length=200,null=True)
     # Relation with visitchoices
     # Patient will be auto selected if done from list of patients.
     patient = models.ForeignKey(
-        'Patient', on_delete=models.DO_NOTHING)
+        'Patient', on_delete=models.DO_NOTHING,null=True)
     visitType = models.ForeignKey(
-        'PatientVisitType', on_delete=models.DO_NOTHING)
+        'PatientVisitType', on_delete=models.DO_NOTHING,null=True)
     appointments = models.ManyToManyField(
-        'PatientAppointment')  # appointments under the patient
+        'PatientAppointment',blank=True)  # appointments under the patient
     # If the visit type is admission
     ward = models.ForeignKey(
         'Ward', on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -1501,14 +1381,16 @@ class PatientVisit(models.Model):
         'Bed', on_delete=models.DO_NOTHING, null=True, blank=True)
     department = models.ForeignKey(
         'Department', on_delete=models.DO_NOTHING, null=True, blank=True)
-    roomsToAttend = models.ManyToManyField('Room')
+    roomsToAttend = models.ManyToManyField('Room',blank=True)
     # Relation with doctor model
     examiner = models.ForeignKey(
         'Consultant', on_delete=models.DO_NOTHING, null=True, blank=True)
-    reasonForVisit = models.TextField()
+    reasonForVisit = models.TextField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(self.date) + '-' + self.visitType
+        p = Patient.objects.get(id=self.patient.id)
+        return str(self.date) + '-' + '%s' % (p)
 
 
 # Followup registaration
@@ -1523,6 +1405,7 @@ class PatientReporting(models.Model):
         'PatientAppointment', on_delete=models.CASCADE, null=True)
     visit = models.ForeignKey(
         'PatientVisit', on_delete=models.CASCADE, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         p = Patient.objects.get(id=self.patient.id)
@@ -1532,6 +1415,7 @@ class PatientReporting(models.Model):
 class ReportFieldTitle(models.Model):
     fieldTitle = models.CharField(max_length=100)
     department = models.ForeignKey('Department', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.fieldTitle
@@ -1542,6 +1426,7 @@ class ReportField(models.Model):
     fieldName = models.CharField(max_length=100)
     description = models.TextField()
     patientReportId = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.fieldName
@@ -1567,7 +1452,8 @@ class Emergency(models.Model):
     created_at = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return self.patientImpacted
+        p = Patient.objects.get(id=self.patientImpacted.id)
+        return '%s' % (p)
 
 
 class Bill(models.Model):
@@ -1583,6 +1469,7 @@ class Bill(models.Model):
     totalPayment = models.IntegerField(null=True, default=0)
     grandTotal = models.BigIntegerField(null=True, default=0)
     status = models.CharField(null=True, max_length=50, choices=bill_status)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         p = Patient.objects.get(id=self.patient_id)
@@ -1611,6 +1498,7 @@ class Bill(models.Model):
 class TotalCharge(models.Model):
     billId = models.IntegerField()
     amount = models.BigIntegerField(null=True, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.billId)
@@ -1625,6 +1513,7 @@ class Charge(models.Model):
     price = models.IntegerField(default=0)
     billId = models.IntegerField(null=True, blank=True)
     totalCharge = models.BigIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         p = Patient.objects.get(id=self.patientId)
@@ -1650,6 +1539,7 @@ class Charge(models.Model):
 class TotalPayment(models.Model):
     patient = models.IntegerField()
     amount = models.IntegerField(null=True, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         p = Patient.objects.get(id=self.patient)
@@ -1666,6 +1556,7 @@ class Payment(models.Model):
     paymentFor = models.CharField(
         max_length=50, choices=payment_for, default='Payment')
     bill = models.IntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.datePaid
@@ -1695,6 +1586,7 @@ class Revenue(models.Model):
         'Payment', on_delete=models.DO_NOTHING, null=True, blank=True)
     # sum of totalCharge of everyBill.
     totalRevenue = models.BigIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.totalRevnue)
@@ -1704,22 +1596,29 @@ class Revenue(models.Model):
 samplStatus = [('Collect', 'Collect'), ('Collected',
                                         'Collected'), ('Report', 'Report')]
 
+flag_status = [('H','H'),('L','L')]
+
+
+
 
 class Sample(models.Model):
-    patientId = models.IntegerField()
+    patientId = models.ForeignKey('Patient',on_delete=models.CASCADE)
     sampleSource = models.ForeignKey('Department', on_delete=models.DO_NOTHING)
     receivedDate = models.DateField(auto_now_add=True)
     requestersName = models.CharField(max_length=200)
     labReportNote = models.TextField(null=True)
     status = models.CharField(max_length=50, choices=samplStatus, default="Collect")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.patientId
+        p = Patient.objects.get(pk=self.patientId.id)
+        return '%s' % (p)
 
 
 class SampleType(models.Model):
     name = models.CharField(max_length=200)
     status = models.CharField(max_length=50, choices=status)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -1729,17 +1628,171 @@ class SampleTest(models.Model):
     name = models.CharField(max_length=100)
     unit = models.CharField(max_length=100)
     sampleType = models.ForeignKey('SampleType', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
 
 class SampleTypeTest(models.Model):
-    sampleTest = models.ForeignKey("SampleTest", on_delete=models.CASCADE)
-    field = models.CharField(max_length=200, null=True)
-    sampleType = models.ForeignKey("SampleType", on_delete=models.CASCADE)
-    sampleId = models.IntegerField()
+    sampleTest = models.ManyToManyField("SampleTest")
+    sampleId = models.IntegerField(null=True)
+    field = models.CharField(max_length=200,null=True)
+    flag = models.CharField(max_length=20,choices=flag_status,null=True,blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        p = SampleTest.objects.get(id=self.sampleTest)
+        p = Sample.objects.get(id=self.sampleId)
+        return '%s' % (p)
+
+
+class Standard(models.Model):
+    name = models.CharField(
+        max_length=50, default='N/A', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Manufacturer(models.Model):
+    name = models.CharField(
+        max_length=50, default='N/A', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class PackSize(models.Model):
+    name = models.CharField(
+        max_length=50, default='N/A', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Generic(models.Model):
+    name = models.CharField(
+        max_length=50, default='N/A', null=True, blank=True)
+    therapeutic = models.CharField(
+        max_length=50, default='N/A', null=True, blank=True, choices=therapeutic)  # choices not finished
+    narcotic = models.CharField(
+        max_length=10, choices=diff, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class GenericStrength(models.Model):
+    genericName = models.ForeignKey(
+        'Generic', on_delete=models.CASCADE, null=True, blank=True)
+    route = models.CharField(
+        max_length=50, choices=route, null=True, blank=True)
+    strength = models.IntegerField(null=True, blank=True)
+    strength_unit = models.CharField(max_length=50, null=True, blank=True)
+    volume = models.IntegerField(null=True, blank=True)
+    volumeUnit = models.CharField(max_length=50, null=True, blank=True)
+    otherInfo = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.genericName
+
+
+class Unit(models.Model):
+    name = models.CharField(max_length=20, null=True, blank=True)
+    formalName = models.CharField(max_length=50, null=True, blank=True)
+    applyFor = models.CharField(max_length=50, choices=applyFor)
+
+    def __str__(self):
+        return self.name
+
+# Medicine item foreign models end
+
+# Master
+
+
+class Medicine(models.Model):
+    brandName = models.CharField(max_length=50, null=True, blank=True)
+    standard = models.ForeignKey(
+        'Standard', on_delete=models.CASCADE, null=True, blank=True)
+    manufacturer = models.ForeignKey(
+        'Manufacturer', on_delete=models.CASCADE, null=True, blank=True)
+    primaryUnit = models.IntegerField(null=True, blank=True)
+    packSize = models.ForeignKey(
+        'PackSize', null=True, blank=True, on_delete=models.CASCADE)
+    preservatives = models.CharField(max_length=50, null=True, blank=True)
+    medicine_type = models.CharField(max_length=50, choices=medicine_type)
+    allow_tablet_break = models.CharField(max_length=10, choices=diff)
+    active = models.CharField(max_length=10, choices=diff)
+    genericSaltStrength = models.OneToOneField(
+        'GenericStrength', on_delete=models.CASCADE,
+        primary_key=True)
+    unit = models.ForeignKey('Unit', on_delete=models.CASCADE)
+    ingredient = models.CharField(max_length=50, null=True, blank=True)
+    secondaryUnit = models.IntegerField(null=True, blank=True)
+    packSize = models.ForeignKey(
+        'PackSize', on_delete=models.CASCADE, null=True, blank=True)
+    minStock = models.IntegerField(null=True, blank=True)
+    maxStock = models.IntegerField(null=True, blank=True)
+    tax = models.CharField(max_length=10, choices=tax)
+
+    def __str__(self):
+        return self.brandName
+
+# Surgical item foreign key model start
+
+
+class SurgicalGroup(models.Model):
+    name = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Surgical(models.Model):
+    surgicalName = models.OneToOneField('SurgicalGroup', on_delete=models.CASCADE,
+                                        primary_key=True,)
+    type_size = models.CharField(max_length=50, null=True, blank=True)
+    remarks = models.TextField()
+
+    def __str__(self):
+        return self.surgicalName
+
+
+# Surgical item foreign key model end
+# Master
+class SurgicalItem(models.Model):
+    brandName = models.CharField(max_length=50, null=True, blank=True)
+    standard = models.ForeignKey(
+        'Standard', on_delete=models.CASCADE, null=True, blank=True)
+    unit = models.ForeignKey(
+        'Unit', on_delete=models.CASCADE, null=True, blank=True)
+    primaryUnit = models.IntegerField(null=True, blank=True)
+    packSize = models.ForeignKey(
+        'PackSize', null=True, blank=True, on_delete=models.CASCADE)
+    secondaryUnit = models.IntegerField(null=True, blank=True)
+    packSize = models.ForeignKey(
+        'PackSize', on_delete=models.CASCADE, null=True, blank=True)
+    tax = models.CharField(max_length=20, choices=tax, null=True, blank=True)
+    active = models.CharField(
+        max_length=10, choices=diff, null=True, blank=True)
+    surgicalName = models.OneToOneField('Surgical', on_delete=models.CASCADE,
+                                        primary_key=True)
+    manufacturer = models.ForeignKey(
+        'Manufacturer', null=True, blank=True, on_delete=models.CASCADE)
+    surgical_item_type = models.CharField(
+        max_length=20, choices=medicine_type, null=True, blank=True)
+    min_stock = models.IntegerField(null=True, blank=True)
+    max_stock = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return self.brandName
+
+class MedPurchase(models.Model):
+    medicine = models.ForeignKey(Medicine,on_delete=models.CASCADE,null=True)
+    purchasedQuantity = models.IntegerField(null=True)
+    availableQuantity = models.IntegerField(null=True)
+    isActive = models.CharField(max_length=50,choices=diff,null=True)
+
+    def __str__(self):
+        p = Medicine.objects.get(pk=self.medicine.id)
         return '%s' % (p)

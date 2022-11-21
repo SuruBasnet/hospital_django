@@ -49,3 +49,24 @@ admin.site.register(Charge)
 admin.site.register(PrimaryDiagnosis)
 admin.site.register(TotalPayment)
 admin.site.register(TotalCharge)
+admin.site.register(Sample)
+admin.site.register(SampleTest)
+admin.site.register(SampleType)
+admin.site.register(SampleTypeTest)
+admin.site.register(User)
+admin.site.register(Room)
+
+# New registers
+admin.site.register(PatientVisit)
+admin.site.register(PatientNotes)
+admin.site.register(PatientAppointment)
+admin.site.register(PatientVisitType)
+# New registers 11/14/2022
+admin.site.register(PatientAllergies)
+admin.site.register(CurrentOperativePlan)
+admin.site.register(PatientSurgery)
+admin.site.register(Emergency)
+admin.site.register(Payment)
+
+
+
